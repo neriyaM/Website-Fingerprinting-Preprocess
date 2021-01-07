@@ -1,0 +1,3 @@
+
+def extract(session):
+    pass
