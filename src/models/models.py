@@ -12,12 +12,7 @@ class LabeledCapture:
 
 
 @dataclass()
-class SingleSessionHandshakeRepr:
+class LabeledProcessedSession:
     label: str
     session: bytearray
 
-
-@dataclass()
-class MultipleSessionsHandshakeRepr:
-    label: str
-    sessions: List[SingleSessionHandshakeRepr]

@@ -8,7 +8,9 @@ def main():
     args = parser.parse_args()
     load_layer("tls")
     dir_processor = DirectoryProcessor(args.dir)
-    mainpage, multiple_sessions = dir_processor.process()
+    mainpage, multiple_sessions, mainpage_time, multiple_sessions_time = dir_processor.process()
+
+    print(mainpage_time[1])
 
 
 def create_arg_parser():
