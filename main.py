@@ -1,5 +1,7 @@
 from scapy.all import *
-from src.directory_processor import DirectoryProcessor
+from src.extractors.labeled_captures_extractor import LabeledCapturesExtractor
+from src.extractors.handshake_extractor import extract_mainpage_handshake, extract_multiple_sessions_handshake
+from src.extractors.timeseries_extractor import extract_multiple_sessions_timeseries
 import argparse
 
 
@@ -7,10 +9,14 @@ def main():
     parser = create_arg_parser()
     args = parser.parse_args()
     load_layer("tls")
-    dir_processor = DirectoryProcessor(args.dir)
-    mainpage, multiple_sessions, mainpage_time, multiple_sessions_time = dir_processor.process()
+    labeled_captures_extractor = LabeledCapturesExtractor(args.dir)
+    labeled_captures = labeled_captures_extractor.extract()
 
-    print(mainpage_time[1])
+    mainpage_handshake = extract_mainpage_handshake(labeled_captures)
+    multiple_sessions_handshake = extract_multiple_sessions_handshake(labeled_captures)
+    multiple_sessions_timeseries = extract_multiple_sessions_timeseries(labeled_captures)
+
+    print(mainpage_handshake[0])
 
 
 def create_arg_parser():
