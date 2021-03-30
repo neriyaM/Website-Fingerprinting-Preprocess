@@ -17,6 +17,8 @@ class LabeledCapturesExtractor:
                 labeled_captures.append(labeled_capture)
         return labeled_captures
 
+    # example: facebook.com/a: [capture1.pcap, capture2.pcap]
+    #          facebook.com/b: [capture3.pcap, capture4.pcap]
     def extract_labeled_filenames(self):
         output = {}
         for root, dirs, files in os.walk(self.path):

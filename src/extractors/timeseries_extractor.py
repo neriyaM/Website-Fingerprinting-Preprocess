@@ -1,7 +1,7 @@
 from scapy.all import *
 from src.models.models import LabeledProcessedSession
 
-
+# example: [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,,1,1,1,0,1,1,1,1,1,1,1,1,1,]
 def extract_timeseries(session):
     result = bytearray()
     src = session[0][IP].src
@@ -41,5 +41,6 @@ def extract_multiple_sessions_timeseries(labeled_captures):
                 timeseries = extract_timeseries(session)
                 session_repr = LabeledProcessedSession(labeled_capture.label, timeseries)
                 current_capture_sessions.append(session_repr)
-        output.append(current_capture_sessions)
+        if len(current_capture_sessions) > 0:
+            output.append(current_capture_sessions)
     return output

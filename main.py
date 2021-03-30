@@ -1,7 +1,6 @@
 from scapy.all import *
 from src.extractors.labeled_captures_extractor import LabeledCapturesExtractor
-from src.extractors.handshake_extractor import extract_mainpage_handshake, extract_multiple_sessions_handshake
-from src.extractors.timeseries_extractor import extract_multiple_sessions_timeseries
+from src.extractors.facebook_extractor import extract_facebook_sessions
 import argparse
 
 
@@ -12,11 +11,8 @@ def main():
     labeled_captures_extractor = LabeledCapturesExtractor(args.dir)
     labeled_captures = labeled_captures_extractor.extract()
 
-    mainpage_handshake = extract_mainpage_handshake(labeled_captures)
-    multiple_sessions_handshake = extract_multiple_sessions_handshake(labeled_captures)
-    multiple_sessions_timeseries = extract_multiple_sessions_timeseries(labeled_captures)
-
-    print(mainpage_handshake[0])
+    facebook_sessions = extract_facebook_sessions(labeled_captures)
+    print(facebook_sessions)
 
 
 def create_arg_parser():

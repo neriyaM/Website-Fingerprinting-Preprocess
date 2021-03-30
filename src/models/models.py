@@ -1,7 +1,6 @@
 from scapy.plist import PacketList
 from src.utils import full_duplex
 from dataclasses import dataclass
-from typing import List
 
 
 class LabeledCapture:
@@ -15,4 +14,3 @@ class LabeledCapture:
 class LabeledProcessedSession:
     label: str
     session: bytearray
-
