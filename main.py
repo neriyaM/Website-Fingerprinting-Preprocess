@@ -14,8 +14,8 @@ def main():
     labeled_captures = labeled_captures_extractor.extract()
 
     X_train, Y_train = extract_mainpage_handshake(labeled_captures)
-    multiple_sessions_handshake = extract_multiple_sessions_handshake(labeled_captures)
-    multiple_sessions_timeseries = extract_multiple_sessions_timeseries(labeled_captures)
+    # multiple_sessions_handshake = extract_multiple_sessions_handshake(labeled_captures)
+    # multiple_sessions_timeseries = extract_multiple_sessions_timeseries(labeled_captures)
 
     store_data(X_train, Y_train)
     print(X_train)
@@ -23,11 +23,19 @@ def main():
 
 
 def store_data(X_train, Y_train):
-    with open('output.csv', 'w+') as f:
-        writer = csv.writer(f)
-        for i in range(0, len(X_train)):
-            out = X_train[i] + [Y_train[i]]
-            writer.writerow(out)
+    data = split_by_label(X_train, Y_train)
+    for name, features in data.items():
+        with open('{}.csv'.format(name), 'w+', newline='') as f:
+            writer = csv.writer(f)
+            for feature in features:
+                writer.writerow(feature)
+
+
+def split_by_label(X_train, Y_train):
+    data = defaultdict(list)
+    for i in range(0, len(X_train)):
+        data[Y_train[i]].append(X_train[i])
+    return data
 
 
 def create_arg_parser():
