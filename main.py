@@ -3,6 +3,7 @@ from src.extractors.labeled_captures_extractor import LabeledCapturesExtractor
 from src.extractors.handshake_extractor import extract_mainpage_handshake, extract_multiple_sessions_handshake
 from src.extractors.timeseries_extractor import extract_multiple_sessions_timeseries
 import argparse
+import csv
 
 
 def main():
@@ -12,11 +13,21 @@ def main():
     labeled_captures_extractor = LabeledCapturesExtractor(args.dir)
     labeled_captures = labeled_captures_extractor.extract()
 
-    mainpage_handshake = extract_mainpage_handshake(labeled_captures)
+    X_train, Y_train = extract_mainpage_handshake(labeled_captures)
     multiple_sessions_handshake = extract_multiple_sessions_handshake(labeled_captures)
     multiple_sessions_timeseries = extract_multiple_sessions_timeseries(labeled_captures)
 
-    print(mainpage_handshake[0])
+    store_data(X_train, Y_train)
+    print(X_train)
+    print(Y_train)
+
+
+def store_data(X_train, Y_train):
+    with open('output.csv', 'w+') as f:
+        writer = csv.writer(f)
+        for i in range(0, len(X_train)):
+            out = X_train[i] + [Y_train[i]]
+            writer.writerow(out)
 
 
 def create_arg_parser():
