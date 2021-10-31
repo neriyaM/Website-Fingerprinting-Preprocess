@@ -28,9 +28,8 @@ def get_main_session(sessions):
     for _, session in sessions.items():
         if len(session[TLS]) > 0:
             server_name = extract_server_name(session)
-            if server_name is not None and server_name in ["facebook.com", "www.facebook.com"]:
+            if server_name is not None and server_name in ["en.wikipedia.org"]:
                 relevant_sessions.append(session)
-    print(len(relevant_sessions))
     return max(relevant_sessions, key=len)
 
 
@@ -38,9 +37,12 @@ def extract_mainpage_handshake(labeled_captures):
     all_features = []
     labels = []
     for labeled_capture in labeled_captures:
-        print(labeled_capture.label)
         main_session = get_main_session(labeled_capture.sessions)
-        all_features.append(extract_features(main_session))
+        features = extract_features(main_session)
+        if len(features) != 148:
+            print("The len of " + labeled_capture.label + " Is: " + str(len(features)))
+            continue
+        all_features.append(features)
         labels.append(labeled_capture.label)
     return all_features, labels
 
@@ -79,77 +81,77 @@ def extract_features(session):
 
 
 def extract_outgoing_total_size(session):
-    src = session[0][IP].src
+    src = session[0][IPv6].src
     total_len = 0
     for packet in session:
-        if packet[IP].src == src:
+        if packet[IPv6].src == src:
             total_len += len(packet)
     
     return total_len
 
 
 def extract_incoming_total_size(session):
-    dst = session[0][IP].dst
+    dst = session[0][IPv6].dst
     total_len = 0
     for packet in session:
-        if packet[IP].src == dst:
+        if packet[IPv6].src == dst:
             total_len += len(packet)
 
     return total_len
 
 def extract_incoming_total_count(session):
-    dst = session[0][IP].dst
+    dst = session[0][IPv6].dst
     total_count = 0
     for packet in session:
-        if packet[IP].src == dst:
+        if packet[IPv6].src == dst:
             total_count +1
 
     return total_count
 
 def extract_outgoing_total_count(session):
-    src = session[0][IP].src
+    src = session[0][IPv6].src
     total_len = 0
     for packet in session:
-        if packet[IP].src == src:
+        if packet[IPv6].src == src:
             total_len += 1
 
     return total_len
 
 def extract_first_30_incoming_total_size(session):
-    dst = session[0][IP].dst
+    dst = session[0][IPv6].dst
     ls_30 = []
     for packet in session:
-        if packet[IP].src == dst:
+        if packet[IPv6].src == dst:
             ls_30.append(packet)
     to_ret = sorted(ls_30, key=lambda p: p[TCP].time)[:30]
     #print('\n'.join([datetime.datetime.fromtimestamp(p[TCP].time).strftime('%Y-%m-%d %H:%M:%S.%f') for p in to_ret]))
     return sum([len(p) for p in to_ret])
 
 def extract_first_10_outgoing_total_size(session):
-    src = session[0][IP].src
+    src = session[0][IPv6].src
     ls_10 = []
     for packet in session:
-        if packet[IP].src == src:
+        if packet[IPv6].src == src:
             ls_10.append(packet)
     to_ret = sorted(ls_10, key=lambda p: p[TCP].time)[:10]
     #print('\n'.join([datetime.datetime.fromtimestamp(p[TCP].time).strftime('%Y-%m-%d %H:%M:%S.%f') for p in to_ret]))
     return sum([len(p) for p in to_ret])
 
 def extract_last_10_outgoing_total_size(session):
-    src = session[0][IP].src
+    src = session[0][IPv6].src
     ls_last_10 = []
     for packet in session:
-        if packet[IP].src == src:
+        if packet[IPv6].src == src:
             ls_last_10.append(packet)
     to_ret = sorted(ls_last_10, key=lambda p: p[TCP].time, reverse=True)[:10]
     #print('\n'.join([datetime.datetime.fromtimestamp(p[TCP].time).strftime('%Y-%m-%d %H:%M:%S.%f') for p in to_ret]))
     return sum([len(p) for p in to_ret])
 
 def extract_last_10_incoming_total_size(session):
-    dst = session[0][IP].dst
+    dst = session[0][IPv6].dst
     ls_last_10 = []
     for packet in session:
-        if packet[IP].src == dst:
+        if packet[IPv6].src == dst:
             ls_last_10.append(packet)
     to_ret = sorted(ls_last_10, key=lambda p: p[TCP].time, reverse=True)[:10]
     #print('\n'.join([datetime.datetime.fromtimestamp(p[TCP].time).strftime('%Y-%m-%d %H:%M:%S.%f') for p in to_ret]))
@@ -157,15 +159,15 @@ def extract_last_10_incoming_total_size(session):
 
 
 def total_size_of_incoming_packets_20_time_slices(session, ls_invervals):
-    dst = session[0][IP].dst
+    dst = session[0][IPv6].dst
     ls = [0]*20
     # for l_i_p in ls_invervals:
     #
-    #     ls.append(sum([len(p) for p in l_i_p if p[IP].src == dst]))
+    #     ls.append(sum([len(p) for p in l_i_p if p[IPv6].src == dst]))
     for interval_num, packs in ls_invervals.items():
         sum = 0
         for p in packs:
-            if p[IP].src == dst:
+            if p[IPv6].src == dst:
                 sum+=len(p)
 
         ls[interval_num] = sum
@@ -173,17 +175,17 @@ def total_size_of_incoming_packets_20_time_slices(session, ls_invervals):
     return ls
 
 def total_size_of_outgoing_packets_20_time_slices(session, ls_invervals):
-    #src = session[0][IP].src
-    #return [sum(len(p) for p in v if p[IP].src == src else 0) for k,v in ls_invervals]
-    src = session[0][IP].src
+    #src = session[0][IPv6].src
+    #return [sum(len(p) for p in v if p[IPv6].src == src else 0) for k,v in ls_invervals]
+    src = session[0][IPv6].src
     ls = [0] * 20
     # for l_i_p in ls_invervals:
     #
-    #     ls.append(sum([len(p) for p in l_i_p if p[IP].src == dst]))
+    #     ls.append(sum([len(p) for p in l_i_p if p[IPv6].src == dst]))
     for interval_num, packs in ls_invervals.items():
         sum = 0
         for p in packs:
-            if p[IP].src == src:
+            if p[IPv6].src == src:
                 sum += len(p)
 
         ls[interval_num] = sum
@@ -192,17 +194,17 @@ def total_size_of_outgoing_packets_20_time_slices(session, ls_invervals):
 
 
 def total_count_of_incoming_packets_20_time_slices(session, ls_invervals):
-    #dst = session[0][IP].dst
-    #return [sum(map(lambda p : p[IP].src == dst, l_i_p)) for l_i_p in ls_invervals]
-    dst = session[0][IP].dst
+    #dst = session[0][IPv6].dst
+    #return [sum(map(lambda p : p[IPv6].src == dst, l_i_p)) for l_i_p in ls_invervals]
+    dst = session[0][IPv6].dst
     ls = [0] * 20
     # for l_i_p in ls_invervals:
     #
-    #     ls.append(sum([len(p) for p in l_i_p if p[IP].src == dst]))
+    #     ls.append(sum([len(p) for p in l_i_p if p[IPv6].src == dst]))
     for interval_num, packs in ls_invervals.items():
         count = 0
         for p in packs:
-            if p[IP].src == dst:
+            if p[IPv6].src == dst:
                 count += 1
 
         ls[interval_num] = count
@@ -210,19 +212,19 @@ def total_count_of_incoming_packets_20_time_slices(session, ls_invervals):
     return ls
 
 def total_count_of_outgoing_packets_20_time_slices(session, ls_invervals):
-    #src = session[0][IP].src
-    #return [sum(map(lambda p : p[IP].src == src, l_i_p)) for l_i_p in ls_invervals]
-    # dst = session[0][IP].dst
-    # return [sum(map(lambda p : p[IP].src == dst, l_i_p)) for l_i_p in ls_invervals]
-    src = session[0][IP].src
+    #src = session[0][IPv6].src
+    #return [sum(map(lambda p : p[IPv6].src == src, l_i_p)) for l_i_p in ls_invervals]
+    # dst = session[0][IPv6].dst
+    # return [sum(map(lambda p : p[IPv6].src == dst, l_i_p)) for l_i_p in ls_invervals]
+    src = session[0][IPv6].src
     ls = [0] * 20
     # for l_i_p in ls_invervals:
     #
-    #     ls.append(sum([len(p) for p in l_i_p if p[IP].src == dst]))
+    #     ls.append(sum([len(p) for p in l_i_p if p[IPv6].src == dst]))
     for interval_num, packs in ls_invervals.items():
         count = 0
         for p in packs:
-            if p[IP].src == src:
+            if p[IPv6].src == src:
                 count += 1
 
         ls[interval_num] = count
@@ -263,16 +265,16 @@ def split_time_20_intervals(session):
 
 
 def first_20_incoming_packet_size(session):
-    dst = session[0][IP].dst
-    return [len(p) for p in sorted(session, key=lambda p: p[TCP].time) if p[IP].src == dst][:20]
+    dst = session[0][IPv6].dst
+    return [len(p) for p in sorted(session, key=lambda p: p[TCP].time) if p[IPv6].src == dst][:20]
 
 def first_20_outgoing_packet_size(session):
-    src = session[0][IP].src
-    return [len(p) for p in sorted(session, key=lambda p: p[TCP].time) if p[IP].src == src][:20]
+    src = session[0][IPv6].src
+    return [len(p) for p in sorted(session, key=lambda p: p[TCP].time) if p[IPv6].src == src][:20]
 
 def last_20_incoming_packet_size(session):
-    dst = session[0][IP].dst
-    return [len(p) for p in sorted(session, key=lambda p: p[TCP].time, reverse=True) if p[IP].src == dst][:20]
+    dst = session[0][IPv6].dst
+    return [len(p) for p in sorted(session, key=lambda p: p[TCP].time, reverse=True) if p[IPv6].src == dst][:20]
 
 def extract_multiple_sessions_handshake(labeled_captures):
     output = []

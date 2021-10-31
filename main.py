@@ -18,8 +18,6 @@ def main():
     # multiple_sessions_timeseries = extract_multiple_sessions_timeseries(labeled_captures)
 
     store_data(X_train, Y_train)
-    print(X_train)
-    print(Y_train)
 
 
 def store_data(X_train, Y_train):
