@@ -1,6 +1,8 @@
+import os
+
 from scapy.all import *
 from src.extractors.labeled_captures_extractor import LabeledCapturesExtractor
-from src.extractors.handshake_extractor import extract_mainpage_handshake, extract_multiple_sessions_handshake
+from src.extractors.handshake_extractor import extract_mainpage_handshake
 from src.extractors.timeseries_extractor import extract_multiple_sessions_timeseries
 import argparse
 import csv
@@ -23,7 +25,9 @@ def main():
 def store_data(X_train, Y_train):
     data = split_by_label(X_train, Y_train)
     for name, features in data.items():
-        with open('{}.csv'.format(name), 'w+', newline='') as f:
+        filename = '{}.csv'.format(name)
+        path = os.path.join('output', filename)
+        with open(path, 'w+', newline='') as f:
             writer = csv.writer(f)
             for feature in features:
                 writer.writerow(feature)
