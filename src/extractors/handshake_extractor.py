@@ -3,6 +3,7 @@ from src.models.models import LabeledProcessedSession
 import datetime
 from collections import defaultdict
 
+
 def extract_handshake(session):
     result = bytearray()
     for pkt in session[TLS]:
@@ -38,16 +39,19 @@ def extract_mainpage_handshake(labeled_captures):
     labels = []
     for labeled_capture in labeled_captures:
         main_session = get_main_session(labeled_capture.sessions)
-        features = extract_features(main_session)
-        if len(features) != 1000:
+        direction_features = extract_direction_features(main_session)
+        time_features = extract_time_features(main_session)
+        metadata_features = extract_metadata_features(main_session)
+        features = [*direction_features, *time_features, *metadata_features]
+        if len(features) != 2007:
             print("The len of " + labeled_capture.label + " Is: " + str(len(features)))
-            continue
+            exit(1)
         all_features.append(features)
         labels.append(labeled_capture.label)
     return all_features, labels
 
 
-def extract_features(session):
+def extract_direction_features(session):
     features = []
     src = session[0][IPv6].src
     for pkt in session:
@@ -62,3 +66,36 @@ def extract_features(session):
         features.extend([0] * (1000 - len(features)))
 
     return features
+
+
+def extract_time_features(session):
+    features = []
+    prev_time = 0
+    for pkt in session:
+        if len(features) == 1000:
+            break
+        curr_time = pkt.time
+        features.append(curr_time - prev_time)
+        prev_time = curr_time
+
+    if len(features) < 1000:
+        features.extend([0] * (1000 - len(features)))
+
+    return features
+
+
+def extract_metadata_features(session):
+    total_packets = len(session)
+    total_incoming = 0
+    total_outgoing = 0
+    total_time = session[-1].time - session[0].time
+    src = session[0][IPv6].src
+    for pkt in session:
+        if pkt[IPv6].src == src:
+            total_outgoing = total_outgoing + 1
+        else:
+            total_incoming = total_incoming + 1
+    return [total_packets, total_incoming, total_outgoing,
+            total_incoming / total_packets,
+            total_outgoing / total_packets,
+            total_time, total_time / total_packets]
