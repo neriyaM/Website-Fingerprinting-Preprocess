@@ -70,8 +70,8 @@ def extract_direction_features(session):
 
 def extract_time_features(session):
     features = []
-    prev_time = 0
-    for pkt in session:
+    prev_time = session[0].time
+    for pkt in session[1:]:
         if len(features) == 1000:
             break
         curr_time = pkt.time
