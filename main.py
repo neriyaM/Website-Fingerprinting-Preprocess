@@ -1,48 +1,38 @@
-import os
-
 from scapy.all import *
-from src.extractors.labeled_captures_extractor import LabeledCapturesExtractor
-from src.extractors.handshake_extractor import extract_mainpage_handshake
-from src.extractors.timeseries_extractor import extract_multiple_sessions_timeseries
 import argparse
 import csv
+from src.extractors.sessions import SessionsExtractor
+from src.extractors.features import FeaturesExtractor
 
 
 def main():
     parser = create_arg_parser()
     args = parser.parse_args()
     load_layer("tls")
-    labeled_captures_extractor = LabeledCapturesExtractor(args.dir)
-    labeled_captures = labeled_captures_extractor.extract()
+    conf.tls_session_enable = True
+    conf.tls_nss_filename = os.path.join(args.dir, "keys.log")
 
-    X_train, Y_train = extract_mainpage_handshake(labeled_captures)
-    # multiple_sessions_handshake = extract_multiple_sessions_handshake(labeled_captures)
-    # multiple_sessions_timeseries = extract_multiple_sessions_timeseries(labeled_captures)
+    sessions_extractor = SessionsExtractor(os.path.join(args.dir, "trace.pcap"))
+    sessions = sessions_extractor.extract()
 
-    store_data(X_train, Y_train)
+    features_extractor = FeaturesExtractor(sessions)
+    all_features = features_extractor.extract()
+
+    store_features(all_features)
 
 
-def store_data(X_train, Y_train):
-    data = split_by_label(X_train, Y_train)
-    for name, features in data.items():
-        filename = '{}.csv'.format(name)
-        path = os.path.join('output', filename)
-        with open(path, 'w+', newline='') as f:
+def store_features(all_features):
+    for server_name, features_list in all_features.items():
+        server_name = server_name.replace(".", "_")
+        with open(os.path.join("output", server_name + ".csv"), 'w+', newline='') as f:
             writer = csv.writer(f)
-            for feature in features:
-                writer.writerow(feature)
-
-
-def split_by_label(X_train, Y_train):
-    data = defaultdict(list)
-    for i in range(0, len(X_train)):
-        data[Y_train[i]].append(X_train[i])
-    return data
+            for features in features_list:
+                writer.writerow(features)
 
 
 def create_arg_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir', help="The directory of the pcaps")
+    parser.add_argument('--dir', help="The directory of the data")
     return parser
 
 

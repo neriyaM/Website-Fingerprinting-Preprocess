@@ -129,3 +129,6 @@ dmypy.json
 
 captures/
 .idea/
+output/
+data/
+minidata/
