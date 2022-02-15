@@ -13,12 +13,7 @@ def main():
     args = parser.parse_args()
     load_layer("tls")
     labeled_captures_extractor = LabeledCapturesExtractor(args.dir)
-    labeled_captures = labeled_captures_extractor.extract()
-
-    X_train, Y_train = extract_mainpage_handshake(labeled_captures)
-    # multiple_sessions_handshake = extract_multiple_sessions_handshake(labeled_captures)
-    # multiple_sessions_timeseries = extract_multiple_sessions_timeseries(labeled_captures)
-
+    X_train, Y_train = labeled_captures_extractor.extract()
     store_data(X_train, Y_train)
 
 
