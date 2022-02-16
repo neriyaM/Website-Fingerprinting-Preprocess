@@ -4,13 +4,13 @@ from src.models.models import LabeledProcessedSession
 
 def extract_timeseries(session):
     result = bytearray()
-    src = session[0][IP].src
-    dst = session[0][IP].dst
+    src = session[0][IPv6].src
+    dst = session[0][IPv6].dst
     for pkt in session:
         if len(pkt) > 100:
-            if pkt[IP].src == src:
+            if pkt[IPv6].src == src:
                 result.append(1)
-            elif pkt[IP].src == dst:
+            elif pkt[IPv6].src == dst:
                 result.append(0)
     return result
 

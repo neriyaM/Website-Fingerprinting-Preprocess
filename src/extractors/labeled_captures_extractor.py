@@ -13,6 +13,7 @@ class LabeledCapturesExtractor:
         labels = []
         for label in tqdm(labeled_filenames):
             for filename in labeled_filenames[label]:
+                print(filename)
                 capture = rdpcap(filename)
                 labeled_capture = LabeledCapture(label, capture)
                 main_session = get_main_session(labeled_capture.sessions)
@@ -38,11 +39,11 @@ class LabeledCapturesExtractor:
 
 def extract_features(session):
     features = []
-    src = session[0][IP].src
+    src = session[0][IPv6].src
     for pkt in session:
         if len(features) == 1000:
             break
-        if pkt[IP].src == src:
+        if pkt[IPv6].src == src:
             features.append(1)
         else:
             features.append(-1)
@@ -58,7 +59,7 @@ def get_main_session(sessions):
     for _, session in sessions.items():
         if len(session[TLS]) > 0:
             server_name = extract_server_name(session)
-            if server_name is not None and server_name in ["twitter.com"]:
+            if server_name is not None and server_name in ["www.facebook.com"]:
                 relevant_sessions.append(session)
     return max(relevant_sessions, key=len)
 

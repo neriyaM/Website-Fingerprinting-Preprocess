@@ -51,11 +51,11 @@ def extract_mainpage_handshake(labeled_captures):
 
 def extract_features(session):
     features = []
-    src = session[0][IP].src
+    src = session[0][IPv6].src
     for pkt in session:
         if len(features) == 1000:
             break
-        if pkt[IP].src == src:
+        if pkt[IPv6].src == src:
             features.append(1)
         else:
             features.append(-1)
