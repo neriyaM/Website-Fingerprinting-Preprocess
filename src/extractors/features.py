@@ -1,13 +1,16 @@
 from scapy.all import *
+from src.utils import full_duplex
 
 
 class FeaturesExtractor:
-    def __init__(self, sessions):
-        self.sessions = sessions
+    def __init__(self, path):
+        self.path = path
 
     def extract(self):
+        packets = rdpcap(self.path)
+        sessions = packets.sessions(full_duplex)
         all_features = defaultdict(list)
-        for _, session in self.sessions.items():
+        for _, session in sessions.items():
             if len(session[TLS]) > 0 and len(session[TCP]) > 100:
                 server_name = extract_server_name(session)
                 features = extract_features(session)
