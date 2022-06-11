@@ -2,8 +2,6 @@ import os
 
 from scapy.all import *
 from src.extractors.labeled_captures_extractor import LabeledCapturesExtractor
-from src.extractors.handshake_extractor import extract_mainpage_handshake
-from src.extractors.timeseries_extractor import extract_multiple_sessions_timeseries
 import argparse
 import csv
 
