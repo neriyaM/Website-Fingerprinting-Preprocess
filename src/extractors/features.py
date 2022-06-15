@@ -13,7 +13,7 @@ class FeaturesExtractor:
         varcnn_features = defaultdict(list)
         df_features = defaultdict(list)
         for _, session in tqdm.tqdm(sessions.items()):
-            if len(session[TLS]) > 0 and len(session[TCP]) > 100:
+            if len(session[UDP]) > 100 and session[0][UDP].dport == 443:
                 server_name = extract_server_name(session)
                 varcnn_session_features = extract_varcnn_features(session)
                 df_session_features = extract_df_features(session)
@@ -24,13 +24,9 @@ class FeaturesExtractor:
 
 
 def extract_server_name(session):
-    for pkt in session[TLS]:
-        for tls_msg in pkt[TLS].msg:
-            if isinstance(tls_msg, TLSClientHello):
-                for ext in tls_msg.ext:
-                    if isinstance(ext, TLS_Ext_ServerName):
-                        return ext.servernames[0].servername.decode()
-    return None
+    ip_layer = session[0][IP]
+    udp_layer = session[0][UDP]
+    return str(ip_layer.src) + "_" + str(udp_layer.sport) + str(ip_layer.dst) + str(udp_layer.dport)
 
 
 def extract_df_features(session):
